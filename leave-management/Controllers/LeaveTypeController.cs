@@ -33,7 +33,15 @@ namespace leave_management.Controllers
         // GET: LeaveType/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            if (!_repo.IsExists(id))
+            {
+                return NotFound();
+            }
+
+            var leaveType = _repo.FindById(id);
+            var model = _mapper.Map<LeaveTypeViewModel>(leaveType);
+
+            return View(model);
         }
 
         // GET: LeaveType/Create
@@ -79,22 +87,43 @@ namespace leave_management.Controllers
         // GET: LeaveType/Edit/5
         public ActionResult Edit(int id)
         {
-            return View();
+            if (!_repo.IsExists(id))
+            {
+                return NotFound();
+            }
+
+            var leaveType = _repo.FindById(id);
+            var model = _mapper.Map<LeaveTypeViewModel>(leaveType);
+
+            return View(model);
         }
 
         // POST: LeaveType/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public ActionResult Edit(LeaveTypeViewModel model)
         {
             try
             {
-                // TODO: Add update logic here
+                if (!ModelState.IsValid)
+                {
+                    return View();
+                }
+
+                var leaveType = _mapper.Map<LeaveType>(model);
+                var isSucces = _repo.Update(leaveType);
+
+                if (!isSucces)
+                {
+                    ModelState.AddModelError("", "Something went wrong");
+                    return View();
+                }
 
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
+                ModelState.AddModelError("", "Something went wrong");
                 return View();
             }
         }
